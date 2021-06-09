@@ -19,6 +19,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <stdio.h> 	//sprintf
+#include <string.h>	//strlen
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
