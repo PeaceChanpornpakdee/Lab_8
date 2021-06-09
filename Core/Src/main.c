@@ -45,6 +45,8 @@
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+char TxDataBuffer[32] = { 0 };
+char RxDataBuffer[32] = { 0 };
 
 /* USER CODE END PV */
 
@@ -53,6 +55,8 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
+void UARTRecieveAndResponsePolling();
+int16_t UARTRecieveIT();
 
 /* USER CODE END PFP */
 
@@ -91,6 +95,11 @@ int main(void)
   MX_GPIO_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  {
+	  char temp[]="HELLO WORLD\r\n please type something to test UART\r\n";
+	  HAL_UART_Transmit(&huart2, (uint8_t*)temp, strlen(temp),100);
+
+  }
 
   /* USER CODE END 2 */
 
@@ -98,6 +107,27 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  	  /*Method 1 Polling Mode*/
+
+	  //		UARTRecieveAndResponsePolling();
+
+	  		/*Method 2 Interrupt Mode*/
+	  //		HAL_UART_Receive_IT(&huart2,  (uint8_t*)RxDataBuffer, 32);
+
+	  		/*Method 2 W/ 1 Char Received*/
+	  //		int16_t inputchar = UARTRecieveIT();
+	  //		if(inputchar!=-1)
+	  //		{
+
+	  //			sprintf(TxDataBuffer, "ReceivedChar:[%c]\r\n", inputchar);
+	  //			HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 1000);
+	  //		}
+
+
+
+	  		/*This section just simulate Work Load*/
+	  		HAL_Delay(100);
+	  		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -216,6 +246,35 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void UARTRecieveAndResponsePolling()
+{
+	char Recieve[32]={0};
+
+	HAL_UART_Receive(&huart2, (uint8_t*)Recieve, 32, 1000);
+
+	sprintf(TxDataBuffer, "Received:[%s]\r\n", Recieve);
+	HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 1000);
+
+}
+
+
+int16_t UARTRecieveIT()
+{
+	static uint32_t dataPos =0;
+	int16_t data=-1;
+	if(huart2.RxXferSize - huart2.RxXferCount!=dataPos)
+	{
+		data=RxDataBuffer[dataPos];
+		dataPos= (dataPos+1)%huart2.RxXferSize;
+	}
+	return data;
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	sprintf(TxDataBuffer, "Received:[%s]\r\n", RxDataBuffer);
+	HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 1000);
+}
 
 /* USER CODE END 4 */
 
