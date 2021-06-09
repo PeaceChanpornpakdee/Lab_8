@@ -48,6 +48,16 @@ UART_HandleTypeDef huart2;
 char TxDataBuffer[32] = { 0 };
 char RxDataBuffer[32] = { 0 };
 
+typedef enum
+{
+	Main_Menu_Print,
+	Main_Menu_Select,
+	Menu_1_Print,
+	Menu_1_Select,
+	Menu_2_Print,
+	Menu_2_Select
+}Transition_State;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -57,7 +67,6 @@ static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void UARTRecieveAndResponsePolling();
 int16_t UARTRecieveIT();
-void UserInterface(int16_t c);
 
 /* USER CODE END PFP */
 
@@ -117,14 +126,101 @@ int main(void)
 
 	  		/*Method 2 W/ 1 Char Received*/
 	  		int16_t inputchar = UARTRecieveIT();
-	  		if(inputchar!=-1)
-	  		{
-	  			UserInterface(inputchar);
-	  		}
+
+
+	  		static Transition_State State = Main_Menu_Print;
+
+			switch(State)
+			{
+		//--------------------------------------------------------------------------------------------------------
+
+				case Main_Menu_Print:
+					sprintf(TxDataBuffer, "----- Main Menu -----\n\r");
+					HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+					State = Main_Menu_Select;
+					break;
+
+				case Main_Menu_Select:
+					switch(inputchar)
+					{
+						case -1 :
+							break;
+						case '1':
+							State = Menu_1_Print;
+							break;
+						case '2':
+							State = Menu_2_Print;
+							break;
+						default:
+							sprintf(TxDataBuffer, "Only [0] or [1] Key Available\n\r");
+							HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+							State = Main_Menu_Print;
+							break;
+					}
+					break;
+
+		//--------------------------------------------------------------------------------------------------------
+
+				case Menu_1_Print:
+					sprintf(TxDataBuffer, "----- Menu_1 -----\n\r");
+					HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+					State = Menu_1_Select;
+					break;
+
+				case Menu_1_Select:
+					switch(inputchar)
+					{
+						case -1 :
+							break;
+						case 'x':
+							State = Main_Menu_Print;
+							break;
+						default:
+							sprintf(TxDataBuffer, "Only [a][s][d][x] Available\n\r");
+							HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+							State = Menu_1_Print;
+							break;
+					}
+					break;
+
+		//--------------------------------------------------------------------------------------------------------
+
+				case Menu_2_Print:
+					sprintf(TxDataBuffer, "----- Menu_2 -----\n\r");
+					HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+					State = Menu_2_Select;
+					break;
+
+				case Menu_2_Select:
+					switch(inputchar)
+					{
+						case -1 :
+							break;
+						case 'x':
+							State = Main_Menu_Print;
+							break;
+						default:
+							sprintf(TxDataBuffer, "Only [x] Key Available\n\r");
+							HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+							State = Menu_2_Print;
+							break;
+					}
+					break;
+
+				default:
+					break;
+			}
+
+
+
+
+
 
 	  		/*This section just simulate Work Load*/
-	  		HAL_Delay(100);
-	  		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+//	  		HAL_Delay(100);
+//	  		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -274,9 +370,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 1000);
 }
 */
-void UserInterface(int16_t c)
-{
-	switch(c)
+//void UserInterface(int16_t c)
+//{
+
+
+	/*switch(c)
 	{
 		case 'a':
 			sprintf(TxDataBuffer, "ReceivedChar:[%c]\n\r", c);
@@ -290,11 +388,10 @@ void UserInterface(int16_t c)
 			sprintf(TxDataBuffer, "ReceivedChar:[%c]\n\r", 'q');
 			HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
 			break;
+	}*/
 
-	}
 
-
-}
+//}
 /* USER CODE END 4 */
 
 /**
