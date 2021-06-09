@@ -45,8 +45,10 @@
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-char TxDataBuffer[32] = { 0 };
-char RxDataBuffer[32] = { 0 };
+char TxDataBuffer[32]  = { 0 };
+char RxDataBuffer[32]  = { 0 };
+uint8_t ButtonArray[2] = {1,1}; 	//[Now,Past] = [up,up]
+uint32_t ButtonTimeStamp = 0;
 
 typedef enum
 {
@@ -125,8 +127,11 @@ int main(void)
 	  		HAL_UART_Receive_IT(&huart2,  (uint8_t*)RxDataBuffer, 32);
 
 	  		/*Method 2 W/ 1 Char Received*/
-	  		int16_t inputchar = UARTRecieveIT();
 
+	  		ButtonArray[1] = ButtonArray[0];
+	  		ButtonArray[0] = HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin);
+
+	  		int16_t inputchar = UARTRecieveIT();
 
 	  		static Transition_State State = Main_Menu_Print;
 
@@ -206,6 +211,7 @@ int main(void)
 					break;
 
 				case Menu_1_Select:
+
 					switch(inputchar)
 					{
 						case -1 :
@@ -219,7 +225,23 @@ int main(void)
 							State = Menu_1_Print;
 							break;
 					}
+
+
+					if(ButtonArray[0] == 0 && ButtonArray[1] == 1)
+					{
+						sprintf(TxDataBuffer, "Button PRESSED\n\r");
+						HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+					}
+					else if(ButtonArray[0] == 1 && ButtonArray[1] == 0)
+					{
+						sprintf(TxDataBuffer, "Button R E L E A S E D\n\r");
+						HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+
+					}
+
 					break;
+
+		//--------------------------------------------------------------------------------------------------------
 
 				default:
 					break;
@@ -384,28 +406,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 1000);
 }
 */
-//void UserInterface(int16_t c)
-//{
 
-
-	/*switch(c)
-	{
-		case 'a':
-			sprintf(TxDataBuffer, "ReceivedChar:[%c]\n\r", c);
-			HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
-			break;
-		case 'A':
-			sprintf(TxDataBuffer, "ReceivedChar:[%c]\n\r", c);
-			HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
-			break;
-		default:
-			sprintf(TxDataBuffer, "ReceivedChar:[%c]\n\r", 'q');
-			HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
-			break;
-	}*/
-
-
-//}
 /* USER CODE END 4 */
 
 /**
