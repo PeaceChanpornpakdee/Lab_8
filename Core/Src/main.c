@@ -52,10 +52,10 @@ typedef enum
 {
 	Main_Menu_Print,
 	Main_Menu_Select,
+	Menu_0_Print,
+	Menu_0_Select,
 	Menu_1_Print,
-	Menu_1_Select,
-	Menu_2_Print,
-	Menu_2_Select
+	Menu_1_Select
 }Transition_State;
 
 /* USER CODE END PV */
@@ -135,7 +135,11 @@ int main(void)
 		//--------------------------------------------------------------------------------------------------------
 
 				case Main_Menu_Print:
-					sprintf(TxDataBuffer, "----- Main Menu -----\n\r");
+					sprintf(TxDataBuffer, "\n----- Main Menu -----\n\r");
+					HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+					sprintf(TxDataBuffer, "[0] LED Control\n\r");
+					HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+					sprintf(TxDataBuffer, "[1] Button Status\n\n\r");
 					HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
 					State = Main_Menu_Select;
 					break;
@@ -145,11 +149,11 @@ int main(void)
 					{
 						case -1 :
 							break;
+						case '0':
+							State = Menu_0_Print;
+							break;
 						case '1':
 							State = Menu_1_Print;
-							break;
-						case '2':
-							State = Menu_2_Print;
 							break;
 						default:
 							sprintf(TxDataBuffer, "Only [0] or [1] Key Available\n\r");
@@ -161,8 +165,42 @@ int main(void)
 
 		//--------------------------------------------------------------------------------------------------------
 
+				case Menu_0_Print:
+					sprintf(TxDataBuffer, "\n----- LED Control -----\n\r");
+					HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+					sprintf(TxDataBuffer, "[a] Speed Up   +1 Hz\n\r");
+					HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+					sprintf(TxDataBuffer, "[s] Speed Down -1 Hz\n\r");
+					HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+					sprintf(TxDataBuffer, "[d] On/Off\n\r");
+					HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+					sprintf(TxDataBuffer, "[x] Back\n\n\r");
+					HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+					State = Menu_0_Select;
+					break;
+
+				case Menu_0_Select:
+					switch(inputchar)
+					{
+						case -1 :
+							break;
+						case 'x':
+							State = Main_Menu_Print;
+							break;
+						default:
+							sprintf(TxDataBuffer, "Only [a][s][d][x] Available\n\r");
+							HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+							State = Menu_0_Print;
+							break;
+					}
+					break;
+
+		//--------------------------------------------------------------------------------------------------------
+
 				case Menu_1_Print:
-					sprintf(TxDataBuffer, "----- Menu_1 -----\n\r");
+					sprintf(TxDataBuffer, "\n----- Button Status -----\n\r");
+					HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+					sprintf(TxDataBuffer, "[x] Back\n\n\r");
 					HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
 					State = Menu_1_Select;
 					break;
@@ -176,33 +214,9 @@ int main(void)
 							State = Main_Menu_Print;
 							break;
 						default:
-							sprintf(TxDataBuffer, "Only [a][s][d][x] Available\n\r");
-							HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
-							State = Menu_1_Print;
-							break;
-					}
-					break;
-
-		//--------------------------------------------------------------------------------------------------------
-
-				case Menu_2_Print:
-					sprintf(TxDataBuffer, "----- Menu_2 -----\n\r");
-					HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
-					State = Menu_2_Select;
-					break;
-
-				case Menu_2_Select:
-					switch(inputchar)
-					{
-						case -1 :
-							break;
-						case 'x':
-							State = Main_Menu_Print;
-							break;
-						default:
 							sprintf(TxDataBuffer, "Only [x] Key Available\n\r");
 							HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
-							State = Menu_2_Print;
+							State = Menu_1_Print;
 							break;
 					}
 					break;
