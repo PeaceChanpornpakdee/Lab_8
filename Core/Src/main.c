@@ -57,6 +57,7 @@ static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void UARTRecieveAndResponsePolling();
 int16_t UARTRecieveIT();
+void UserInterface(int16_t c);
 
 /* USER CODE END PFP */
 
@@ -96,7 +97,7 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   {
-	  char temp[]="HELLO WORLD\r\n please type something to test UART\r\n";
+	  char temp[]="\n\n\r!!! GET STARTED !!!\n\n\r";
 	  HAL_UART_Transmit(&huart2, (uint8_t*)temp, strlen(temp),100);
 
   }
@@ -118,11 +119,8 @@ int main(void)
 	  		int16_t inputchar = UARTRecieveIT();
 	  		if(inputchar!=-1)
 	  		{
-	  			sprintf(TxDataBuffer, "ReceivedChar:[%c]\r\n", inputchar);
-	  			HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 1000);
+	  			UserInterface(inputchar);
 	  		}
-
-
 
 	  		/*This section just simulate Work Load*/
 	  		HAL_Delay(100);
@@ -269,13 +267,34 @@ int16_t UARTRecieveIT()
 	}
 	return data;
 }
-
+/*
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	sprintf(TxDataBuffer, "Received:[%s]\r\n", RxDataBuffer);
 	HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 1000);
 }
+*/
+void UserInterface(int16_t c)
+{
+	switch(c)
+	{
+		case 'a':
+			sprintf(TxDataBuffer, "ReceivedChar:[%c]\n\r", c);
+			HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+			break;
+		case 'A':
+			sprintf(TxDataBuffer, "ReceivedChar:[%c]\n\r", c);
+			HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+			break;
+		default:
+			sprintf(TxDataBuffer, "ReceivedChar:[%c]\n\r", 'q');
+			HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+			break;
 
+	}
+
+
+}
 /* USER CODE END 4 */
 
 /**
