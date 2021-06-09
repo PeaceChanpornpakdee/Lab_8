@@ -45,10 +45,14 @@
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-char TxDataBuffer[32]  = { 0 };
-char RxDataBuffer[32]  = { 0 };
-uint8_t ButtonArray[2] = {1,1}; 	//[Now,Past] = [up,up]
+char TxDataBuffer[32]    = { 0 };
+char RxDataBuffer[32]    = { 0 };
+uint8_t  ButtonArray[2]  = {1,1}; 	//[Now,Past] = [up,up]
 uint32_t ButtonTimeStamp = 0;
+uint16_t LEDFrequency    = 0;
+uint16_t LEDHalfPeriod   = 0;
+uint32_t LEDTimeStamp    = 0;
+uint8_t  LEDOn           = 1;
 
 typedef enum
 {
@@ -128,6 +132,22 @@ int main(void)
 
 	  		/*Method 2 W/ 1 Char Received*/
 
+
+	  		if(LEDOn)
+	  		{
+	  			if(HAL_GetTick() - LEDTimeStamp >= LEDHalfPeriod) //ms
+				{
+					LEDTimeStamp = HAL_GetTick();
+					HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+				}
+
+	  		}
+
+	  		else
+	  		{
+	  			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, 0);
+	  		}
+
 	  		ButtonArray[1] = ButtonArray[0];
 	  		ButtonArray[0] = HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin);
 
@@ -160,8 +180,13 @@ int main(void)
 						case '1':
 							State = Menu_1_Print;
 							break;
+						case 'x':
+							sprintf(TxDataBuffer, "No More Back\n\r");
+							HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+							State = Main_Menu_Print;
+							break;
 						default:
-							sprintf(TxDataBuffer, "Only [0] or [1] Key Available\n\r");
+							sprintf(TxDataBuffer, "\nOnly [0],[1] Key Available\n\r");
 							HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
 							State = Main_Menu_Print;
 							break;
@@ -189,11 +214,44 @@ int main(void)
 					{
 						case -1 :
 							break;
+						case 'a':
+							LEDFrequency += 1;
+							LEDHalfPeriod = 500/LEDFrequency;
+							sprintf(TxDataBuffer, "Blinking LED at %d Hz\n\r", LEDFrequency);
+							HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+							break;
+						case 's':
+							if(LEDFrequency != 0)
+							{
+								LEDFrequency -= 1;
+								LEDHalfPeriod = 500/LEDFrequency;
+								sprintf(TxDataBuffer, "Blinking LED at %d Hz\n\r", LEDFrequency);
+								HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+							}
+							else
+							{
+								sprintf(TxDataBuffer, "Frequency can't be Negative\n\r");
+								HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+							}
+							break;
+						case 'd':
+							if(LEDOn == 1)
+							{
+								sprintf(TxDataBuffer, "Turn OFF LED\n\r");
+								HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+							}
+							else
+							{
+								sprintf(TxDataBuffer, "Turn ON LED\n\r");
+								HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
+							}
+							LEDOn = !LEDOn;
+							break;
 						case 'x':
 							State = Main_Menu_Print;
 							break;
 						default:
-							sprintf(TxDataBuffer, "Only [a][s][d][x] Available\n\r");
+							sprintf(TxDataBuffer, "\nOnly [a][s][d][x] Available\n\r");
 							HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
 							State = Menu_0_Print;
 							break;
@@ -220,7 +278,7 @@ int main(void)
 							State = Main_Menu_Print;
 							break;
 						default:
-							sprintf(TxDataBuffer, "Only [x] Key Available\n\r");
+							sprintf(TxDataBuffer, "\nOnly [x] Key Available\n\r");
 							HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 100);
 							State = Menu_1_Print;
 							break;
