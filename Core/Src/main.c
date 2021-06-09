@@ -109,19 +109,18 @@ int main(void)
   {
 	  	  /*Method 1 Polling Mode*/
 
-	  //		UARTRecieveAndResponsePolling();
+//	  		UARTRecieveAndResponsePolling();
 
 	  		/*Method 2 Interrupt Mode*/
-	  //		HAL_UART_Receive_IT(&huart2,  (uint8_t*)RxDataBuffer, 32);
+	  		HAL_UART_Receive_IT(&huart2,  (uint8_t*)RxDataBuffer, 32);
 
 	  		/*Method 2 W/ 1 Char Received*/
-	  //		int16_t inputchar = UARTRecieveIT();
-	  //		if(inputchar!=-1)
-	  //		{
-
-	  //			sprintf(TxDataBuffer, "ReceivedChar:[%c]\r\n", inputchar);
-	  //			HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 1000);
-	  //		}
+	  		int16_t inputchar = UARTRecieveIT();
+	  		if(inputchar!=-1)
+	  		{
+	  			sprintf(TxDataBuffer, "ReceivedChar:[%c]\r\n", inputchar);
+	  			HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 1000);
+	  		}
 
 
 
@@ -250,7 +249,8 @@ void UARTRecieveAndResponsePolling()
 {
 	char Recieve[32]={0};
 
-	HAL_UART_Receive(&huart2, (uint8_t*)Recieve, 32, 1000);
+//	HAL_UART_Receive(&huart2, (uint8_t*)Recieve, 32, 1000);
+	HAL_UART_Receive(&huart2, (uint8_t*)Recieve, 4, 1000);
 
 	sprintf(TxDataBuffer, "Received:[%s]\r\n", Recieve);
 	HAL_UART_Transmit(&huart2, (uint8_t*)TxDataBuffer, strlen(TxDataBuffer), 1000);
